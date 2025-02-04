@@ -25,7 +25,7 @@ struct PicAlchemyApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Home()
         }
         .modelContainer(sharedModelContainer)
     }
