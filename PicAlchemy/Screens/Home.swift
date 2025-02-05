@@ -9,58 +9,32 @@ import SwiftUI
 import SwiftData
 
 struct Home: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
     
-    @State var isSplashing: Bool = true
+    @StateObject var selectorVM = ImageSelectorVM()
+    
+    @State var navPath = NavigationPath()
+    
     var body: some View {
-//        NavigationSplitView {
-//            List {
-//                ForEach(items) { item in
-//                    NavigationLink {
-//                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-//                    } label: {
-//                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-//                    }
-//                }
-//                .onDelete(perform: deleteItems)
-//            }
-//            .toolbar {
-//                ToolbarItem(placement: .navigationBarTrailing) {
-//                    EditButton()
-//                }
-//                ToolbarItem {
-//                    Button(action: addItem) {
-//                        Label("Add Item", systemImage: "plus")
-//                    }
-//                }
-//            }
-//        } detail: {
-//            Text("Select an item")
-//        }.transition(.opacity)
-        NavigationStack {
-            ImageSelectorScreen()
+        NavigationStack(path: $navPath) {
+            ImageSelectorScreen(selectorVM: selectorVM)
+                .onChange(of: selectorVM.selectedImage) {
+                    guard selectorVM.selectedImage != nil else { return }
+                    print("BGLM - selected image")
+                    navPath.append("details")
+                }
+                .navigationDestination(for: String.self) { value in
+                    switch(value) {
+                    case "details":
+                        DetailsView(selectedVM: selectorVM)
+                    default:
+                        Text("Blah")
+                    }
+                }
         }
         
     }
-    
-//    private func addItem() {
-//        withAnimation {
-//            let newItem = Item(timestamp: Date())
-//            modelContext.insert(newItem)
-//        }
-//    }
-//    
-//    private func deleteItems(offsets: IndexSet) {
-//        withAnimation {
-//            for index in offsets {
-//                modelContext.delete(items[index])
-//            }
-//        }
-//    }
 }
 
 #Preview {
     Home()
-        .modelContainer(for: Item.self, inMemory: true)
 }
