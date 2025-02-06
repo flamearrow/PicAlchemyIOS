@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 
+// hosting image selection view and alchemy view
 struct Home: View {
     
     @StateObject var selectorVM = ImageSelectorVM()
@@ -25,7 +26,7 @@ struct Home: View {
                 .navigationDestination(for: String.self) { value in
                     switch(value) {
                     case "details":
-                        DetailsView(selectedVM: selectorVM)
+                        AlchemyView(selectedVM: selectorVM)
                     default:
                         Text("Blah")
                     }

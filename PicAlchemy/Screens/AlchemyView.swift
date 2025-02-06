@@ -1,5 +1,5 @@
 //
-//  DetailsView.swift
+//  AlchemyView.swift
 //  PicAlchemy
 //
 //  Created by Chen Cen on 2/4/25.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct DetailsView: View {
+struct AlchemyView: View {
     @ObservedObject var selectedVM: ImageSelectorVM
     
     var body: some View {
@@ -24,5 +24,5 @@ struct DetailsView: View {
 }
 
 #Preview {
-    DetailsView(selectedVM: .init())
+    AlchemyView(selectedVM: .init())
 }

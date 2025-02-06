@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import PhotosUI
 
-// Use an inline photos picker to show photos to select
+// Use an inline photos picker to show photos to select and take a picture from camera
 struct ImageSelectorScreen : View {
     @ObservedObject var selectorVM: ImageSelectorVM
     @State private var showCamera: Bool = false
@@ -29,7 +29,7 @@ struct ImageSelectorScreen : View {
             
             Button(
                 action: {
-                    showCamera = !showCamera
+                    showCamera = true
                 }
             ) {
                 Image(systemName: "camera.fill")
@@ -43,10 +43,9 @@ struct ImageSelectorScreen : View {
             }
             .padding(36)
         }
-        .sheet(isPresented: $showCamera) {
-            Text("camera")
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPicker(image: $selectorVM.selectedImage).ignoresSafeArea()
         }
-        
     }
 }
 
