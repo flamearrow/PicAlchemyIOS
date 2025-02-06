@@ -9,19 +9,15 @@ import Foundation
 import SwiftUI
 import PhotosUI
 
-struct ImageItem: Identifiable {
-    let id: UUID
-    let name: String
-}
-
 // Use an inline photos picker to show photos to select
 struct ImageSelectorScreen : View {
     @ObservedObject var selectorVM: ImageSelectorVM
+    @State private var showCamera: Bool = false
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             PhotosPicker(
-                selection: $selectorVM.selectedImage,
+                selection: $selectorVM.pickedPhotoItem,
                 matching: .images
             ) {
                 Text("Select photos")
@@ -33,7 +29,7 @@ struct ImageSelectorScreen : View {
             
             Button(
                 action: {
-                    print("BGLM - clicked")
+                    showCamera = !showCamera
                 }
             ) {
                 Image(systemName: "camera.fill")
@@ -46,46 +42,11 @@ struct ImageSelectorScreen : View {
                     .clipShape(Circle())
             }
             .padding(36)
-            
+        }
+        .sheet(isPresented: $showCamera) {
+            Text("camera")
         }
         
-        
-//        ScrollView {
-//            LazyVGrid(
-//                columns: Array(
-//                    repeating: .init(.flexible(minimum: 100)), count: 3
-//                    ),
-//                spacing: 100
-//            ) {
-//                ForEach($selection) { $item in
-//                    
-//                }
-//            }
-//        }
-        
-        
-//        ScrollView {
-//            LazyVGrid(
-//                columns: Array(
-//                    repeating:
-//                        GridItem(.flexible(minimum: 100)),
-//                    count: 3
-//                ),
-//                spacing: 100
-//            ) {
-//                ForEach($colums) { $item in
-//                    NavigationLink(
-//                        destination: DetailsView(
-//                            item: $item
-//                        )
-//                    ) {
-//                        Text("\(item.name)")
-//                            .padding()
-//                            .background(.red, in: RoundedRectangle(cornerRadius: 8))
-//                    }
-//                }
-//            }
-//        }
     }
 }
 
