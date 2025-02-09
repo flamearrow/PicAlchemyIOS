@@ -19,20 +19,25 @@ struct AlchemyView: View {
             VStack(spacing: 0) {
                 // Compute the width available for the image.
                 Group {
-                    if showOriginal {
-                        if let image = selectedVM.selectedImage {
-                            Image(uiImage: image).alchemySqr(geometry: geometry)
-                        } else {
-                            Image("tora").alchemySqr(geometry: geometry)
-                        }
+                    if let resultImage = alchemyVM.resultImage {
+                        // MLGB - this is black
+                        Image(uiImage: resultImage).alchemySqr(geometry: geometry)
                     } else {
-                        Image(alchemyVM.styleFileName!).alchemySqr(geometry: geometry)
                         
+                        if showOriginal {
+                            if let image = selectedVM.selectedImage {
+                                Image(uiImage: image).alchemySqr(geometry: geometry)
+                            } else {
+                                Image("tora").alchemySqr(geometry: geometry)
+                            }
+                        } else {
+                            Image(alchemyVM.styleFileName!).alchemySqr(geometry: geometry)
+                            
+                        }
                     }
                 }
                 HStack {
                     CircularButton(systemImage:"square.and.arrow.down", style: .large) {
-                        print("BGLM - save")
                         alchemyVM.saveImage()
                     }
                     
@@ -53,7 +58,6 @@ struct AlchemyView: View {
                     
                     Spacer()
                     CircularButton(systemImage:"square.and.arrow.up", style: .large) {
-                        print("BGLM - save")
                         alchemyVM.share()
                     }
                 }
@@ -65,7 +69,12 @@ struct AlchemyView: View {
                     ],spacing: 6
                     ) {
                         ForEach(alchemyVM.presetStyleNames, id:\.self) { name in
-                            Button(action: {alchemyVM.selectStyle(styleName: name)}
+                            Button(action: {
+                                alchemyVM.selectStyle(
+                                    content: selectedVM.selectedImage!,
+                                    styleName: name
+                                )
+                            }
                             ) {
                                 Image(name)
                                     .resizable()

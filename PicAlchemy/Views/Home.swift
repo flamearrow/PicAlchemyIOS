@@ -20,7 +20,6 @@ struct Home: View {
             ImageSelectorScreen(selectorVM: selectorVM)
                 .onChange(of: selectorVM.selectedImage) {
                     guard selectorVM.selectedImage != nil else { return }
-                    print("BGLM - selected image")
                     navPath.append("details")
                 }
                 .navigationDestination(for: String.self) { value in

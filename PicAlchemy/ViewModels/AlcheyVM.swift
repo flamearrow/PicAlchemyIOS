@@ -10,7 +10,10 @@ import UIKit
 
 class AlcheyVM: ObservableObject {
     @Published var styleFileName: String? = nil
-    
+        
+    @Published var resultImage: UIImage? = nil
+    private let styleTransferer = StyleTransferer()
+
     let presetStyleNames = [
         "style0",
         "style1",
@@ -61,7 +64,20 @@ class AlcheyVM: ObservableObject {
         
     }
     
-    func selectStyle(styleName: String) {
-        self.styleFileName = styleName
+    
+    func selectStyle(content: UIImage, styleName: String) {
+        guard let styleImage = UIImage(named: styleName) else {
+            fatalError("Faithless Error: Style Image not found!")
+        }
+        selectStyleUIImage(content: content, style: styleImage)
+    }
+    
+    func selectStyleUIImage(content: UIImage, style: UIImage) {
+        Task {
+            let result = await styleTransferer.transferStyle(content: content, style: style)
+            DispatchQueue.main.async {
+                self.resultImage = result
+            }
+        }
     }
 }
