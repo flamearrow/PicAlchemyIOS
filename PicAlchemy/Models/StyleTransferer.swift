@@ -11,6 +11,8 @@ import CoreML
 //import Vision
 
 // Run Image style tranformation on Style Transferer
+//  Model from https://www.kaggle.com/models/google/arbitrary-image-stylization-v1/tensorFlow1
+//  Converted to CoreML through transferModel.py
 // UIImage extensions stolen from https://github.com/hollance/CoreMLHelpers
 struct StyleTransferer {
     private let styleTransferModel: StyleTransfererModel
