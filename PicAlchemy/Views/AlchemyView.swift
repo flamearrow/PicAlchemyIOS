@@ -8,31 +8,41 @@
 import Foundation
 import SwiftUI
 
+enum TargetViewState {
+    case loading
+    case idle(contentImage: UIImage)
+    case result(contentImage: UIImage, resultImage: UIImage)
+}
+
 struct AlchemyView: View {
     @ObservedObject var selectedVM: ImageSelectorVM
+    @StateObject var alchemyVM: AlcheyVM
+    @State var showOriginal: Bool
     
-    @StateObject var alchemyVM: AlcheyVM = .init()
-    @State var showOriginal: Bool = true
+    init(selectedVM: ImageSelectorVM) {
+        self._selectedVM = ObservedObject(wrappedValue: selectedVM)
+        self._alchemyVM = StateObject(wrappedValue: AlcheyVM(content: selectedVM.selectedImage))
+        self.showOriginal = false
+    }
     
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 // Compute the width available for the image.
                 Group {
-                    if let resultImage = alchemyVM.resultImage {
-                        // MLGB - this is black
-                        Image(uiImage: resultImage).alchemySqr(geometry: geometry)
-                    } else {
-                        
+                    let imageWidth = geometry.size.width - (2 * 10)
+                    switch(alchemyVM.targetState) {
+                    case .idle(let contentImage):
+                        Image(uiImage: contentImage).alchemySqr(width: imageWidth)
+                    case .loading:
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle()) // Spinner style
+                            .frame(width: imageWidth, height: imageWidth)
+                    case .result(let contentImage, let resultImage):
                         if showOriginal {
-                            if let image = selectedVM.selectedImage {
-                                Image(uiImage: image).alchemySqr(geometry: geometry)
-                            } else {
-                                Image("tora").alchemySqr(geometry: geometry)
-                            }
+                            Image(uiImage: contentImage).alchemySqr(width: imageWidth)
                         } else {
-                            Image(alchemyVM.styleFileName!).alchemySqr(geometry: geometry)
-                            
+                            Image(uiImage: resultImage).alchemySqr(width: imageWidth)
                         }
                     }
                 }
@@ -43,18 +53,31 @@ struct AlchemyView: View {
                     
                     Spacer()
                     
-                    CircularButton(systemImage: "star.leadinghalf.filled", style: .small)
-                        .simultaneousGesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { _ in
-                                    if !showOriginal {
-                                        showOriginal = true
-                                    }
+                    SmallCircularButton(
+                        systemImage: "star.leadinghalf.filled",
+                        disabled:
+                            // wooonky sytax to just check the enum is of type result
+                            {
+                                switch alchemyVM.targetState {
+                                case .result(_, _):
+                                    return false
+                                default: return true
                                 }
-                                .onEnded { _ in
-                                    showOriginal = false
+                            }()
+                    ) {
+                        alchemyVM.toggle()
+                    }
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in
+                                if !showOriginal {
+                                    showOriginal = true
                                 }
-                        )
+                            }
+                            .onEnded { _ in
+                                showOriginal = false
+                            }
+                    )
                     
                     Spacer()
                     CircularButton(systemImage:"square.and.arrow.up", style: .large) {
@@ -87,7 +110,7 @@ struct AlchemyView: View {
                     }.padding()
                 }
             }
-        }.navigationBarHidden(true)
+        }
     }
     
 }
@@ -96,9 +119,11 @@ private struct SquareImageModifier: ViewModifier {
     let imageWidth: CGFloat
     
     func body(content: Content) -> some View {
+        // Add this to avoid warning
+        let safeImageWidth = imageWidth.isFinite && imageWidth > 0 ? imageWidth : 100
         content
             .scaledToFill()
-            .frame(width: imageWidth, height: imageWidth)
+            .frame(width: safeImageWidth, height: safeImageWidth)
             .clipped() // Ensures any excess image content is cut off.
             .clipShape(RoundedRectangle(cornerRadius: 10))
     }
@@ -106,12 +131,13 @@ private struct SquareImageModifier: ViewModifier {
 }
 
 private extension Image {
-    func alchemySqr(geometry: GeometryProxy)  -> some View {
-        let imageWidth = geometry.size.width - (2 * 10)
-        return self.resizable().modifier(SquareImageModifier(imageWidth: imageWidth))
+    func alchemySqr(width: CGFloat)  -> some View {
+        return self.resizable().modifier(SquareImageModifier(imageWidth: width))
     }
 }
 
 #Preview {
-    AlchemyView(selectedVM: .init())
+    AlchemyView(selectedVM: .init(
+        selectedImage: UIImage(named: "tora")
+    ))
 }

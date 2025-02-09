@@ -17,7 +17,11 @@ struct CircularButton: View {
     let style: Style
     var action: () -> Void = {}
     
+    let largeSize: CGFloat = 60
+    let largePadding: CGFloat = 14
     
+    let smallSize: CGFloat = 40
+    let smallPadding: CGFloat = 10
     
     var body: some View {
         switch(style) {
@@ -26,12 +30,12 @@ struct CircularButton: View {
                 Image(systemName: systemImage)
                     .resizable()
                     .scaledToFit()
-                    .padding(14)
-                    .frame(width: 80, height: 80)
+                    .padding(largePadding)
+                    .frame(width: largeSize, height: largeSize)
                     .foregroundColor(.white)
                     .background(Color("AccentColor"))
                     .clipShape(Circle())
-                    .padding(40)
+                    .padding(.init(top: 30, leading: 40, bottom: 20, trailing: 40))
                     .shadow(radius: 10)
             }
         case .small:
@@ -39,8 +43,8 @@ struct CircularButton: View {
                 Image(systemName: systemImage)
                     .resizable()
                     .scaledToFit()
-                    .padding(10)
-                    .frame(width: 50, height: 50)
+                    .padding(smallPadding)
+                    .frame(width: smallSize, height: smallSize)
                     .foregroundColor(.white)
                     .background(Color("AccentColor"))
                     .clipShape(Circle())

@@ -22,6 +22,13 @@ class ImageSelectorVM: ObservableObject {
     
     @Published var selectedImage: UIImage? = nil
     
+    init() {}
+    
+    // For preview only
+    init(selectedImage: UIImage?) {
+        self.selectedImage = selectedImage
+    }
+    
     @MainActor
     private func loadImage() async {
         guard let photoItem = pickedPhotoItem else {return}

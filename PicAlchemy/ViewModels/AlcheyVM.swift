@@ -7,11 +7,22 @@
 
 import Foundation
 import UIKit
+import OSLog
 
 class AlcheyVM: ObservableObject {
     @Published var styleFileName: String? = nil
         
     @Published var resultImage: UIImage? = nil
+    
+    @Published var targetState: TargetViewState
+    
+    init(content: UIImage?) {
+        guard let content = content else {
+            fatalError("invalid content image")
+        }
+        self.targetState = .idle(contentImage: content)
+    }
+    
     private let styleTransferer = StyleTransferer()
 
     let presetStyleNames = [
@@ -43,12 +54,6 @@ class AlcheyVM: ObservableObject {
         "style25"
     ]
     
-    var selectedStyle: UIImage? = nil {
-        didSet {
-            // trigger style transformation
-        }
-    }
-    
     // Save image to local storage
     func saveImage() {
         
@@ -64,20 +69,26 @@ class AlcheyVM: ObservableObject {
         
     }
     
-    
+    // MainActor required because self.resultImage needs to be updated on main thread
+    @MainActor
     func selectStyle(content: UIImage, styleName: String) {
+        let content: UIImage
+        if case .idle(let contentImage) = targetState {
+            content = contentImage
+        } else if case .result(let contentImage, _) = targetState {
+            content = contentImage
+        } else {
+            Logger.alchemyVM.info("Tapped another style while transferring")
+            return
+            
+        }
+        targetState = .loading
         guard let styleImage = UIImage(named: styleName) else {
             fatalError("Faithless Error: Style Image not found!")
         }
-        selectStyleUIImage(content: content, style: styleImage)
-    }
-    
-    func selectStyleUIImage(content: UIImage, style: UIImage) {
         Task {
-            let result = await styleTransferer.transferStyle(content: content, style: style)
-            DispatchQueue.main.async {
-                self.resultImage = result
-            }
+            let resultImage = await styleTransferer.transferStyle(content: content, style: styleImage)
+            targetState = .result(contentImage: content, resultImage: resultImage)
         }
     }
 }

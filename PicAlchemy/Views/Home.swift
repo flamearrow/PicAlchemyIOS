@@ -26,6 +26,7 @@ struct Home: View {
                     switch(value) {
                     case "details":
                         AlchemyView(selectedVM: selectorVM)
+                            .navigationBarBackButtonHidden(false)
                     default:
                         Text("Blah")
                     }
