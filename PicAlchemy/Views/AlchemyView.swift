@@ -26,96 +26,101 @@ struct AlchemyView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Compute the width available for the image.
-                Group {
-                    let imageWidth = geometry.size.width - (2 * 10)
-                    switch(alchemyVM.targetState) {
-                    case .idle(let contentImage):
-                        Image(uiImage: contentImage).alchemySqr(width: imageWidth)
-                    case .loading:
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle()) // Spinner style
-                            .frame(width: imageWidth, height: imageWidth)
-                    case .result(let contentImage, let resultImage):
-                        if showOriginal {
-                            Image(uiImage: contentImage).alchemySqr(width: imageWidth)
-                        } else {
-                            Image(uiImage: resultImage).alchemySqr(width: imageWidth)
+        VStack {
+            // Compute the width available for the image.
+            Group {
+                switch(alchemyVM.targetState) {
+                case .idle(let contentImage):
+                    Image(uiImage: contentImage).alchemySqr()
+                case .loading:
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle()) // Spinner style
+                        .fullScreenSqr()
+                case .result(let contentImage, let resultImage):
+                    if showOriginal {
+                        Image(uiImage: contentImage).alchemySqr()
+                    } else {
+                        Image(uiImage: resultImage).alchemySqr()
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            HStack {
+                CircularButton(systemImage:"square.and.arrow.down", style: .large) {
+                    alchemyVM.saveImage()
+                }
+                
+                Spacer()
+                
+                SmallCircularButton(
+                    systemImage: "star.leadinghalf.filled",
+                    disabled:
+                        // wooonky sytax to just check the enum is of type result
+                    {
+                        switch alchemyVM.targetState {
+                        case .result(_, _):
+                            return false
+                        default: return true
                         }
-                    }
+                    }()
+                ) {
+                    alchemyVM.toggle()
                 }
-                HStack {
-                    CircularButton(systemImage:"square.and.arrow.down", style: .large) {
-                        alchemyVM.saveImage()
-                    }
-                    
-                    Spacer()
-                    
-                    SmallCircularButton(
-                        systemImage: "star.leadinghalf.filled",
-                        disabled:
-                            // wooonky sytax to just check the enum is of type result
-                            {
-                                switch alchemyVM.targetState {
-                                case .result(_, _):
-                                    return false
-                                default: return true
-                                }
-                            }()
-                    ) {
-                        alchemyVM.toggle()
-                    }
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { _ in
-                                if !showOriginal {
-                                    showOriginal = true
-                                }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in
+                            if !showOriginal {
+                                showOriginal = true
                             }
-                            .onEnded { _ in
-                                showOriginal = false
-                            }
-                    )
-                    
-                    Spacer()
-                    CircularButton(systemImage:"square.and.arrow.up", style: .large) {
-                        alchemyVM.share()
-                    }
-                }
-                .padding(
-                    .init(top: 30, leading: 40, bottom: 20, trailing: 40)
+                        }
+                        .onEnded { _ in
+                            showOriginal = false
+                        }
                 )
                 
-                ScrollView(.horizontal) {
-                    LazyHGrid(rows: [
-                        GridItem(.fixed(100)),
-                        GridItem(.fixed(100))
-                    ],spacing: 6
-                    ) {
-                        ForEach(alchemyVM.presetStyleNames, id:\.self) { name in
-                            Button(action: {
-                                alchemyVM.selectStyle(
-                                    content: selectedVM.selectedImage!,
-                                    styleName: name
-                                )
-                            }
-                            ) {
-                                Image(name)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .aspectRatio(1, contentMode: .fit)
-                                    .frame(width: 100, height: 100)
-                                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                            }
-                        }
-                    }.padding()
+                Spacer()
+                CircularButton(systemImage:"square.and.arrow.up", style: .large) {
+                    alchemyVM.share()
                 }
+            }
+            .padding(.leading, 40)
+            .padding(.trailing, 40)
+            
+            Spacer()
+            
+            ScrollView(.horizontal) {
+                LazyHGrid(
+                    rows: [
+                        GridItem(.fixed(80)),
+                        GridItem(.fixed(80))
+                    ],
+                    alignment: .top,
+                    spacing: 8
+                ) {
+                    ForEach(alchemyVM.presetStyleNames, id:\.self) { name in
+                        Button(action: {
+                            alchemyVM.selectStyle(
+                                content: selectedVM.selectedImage!,
+                                styleName: name
+                            )
+                        }
+                        ) {
+                            Image(name)
+                                .resizable()
+                                .scaledToFit()
+                                .aspectRatio(1, contentMode: .fit)
+                                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        }
+                    }
+                }
+                .padding(.leading, 6)
+                .padding(.trailing, 6)
+                .frame(height: 172) // 2 rows + 1 spacing btn + 1 spacing below
             }
         }
     }
-    
 }
 
 private struct SquareImageModifier: ViewModifier {
@@ -134,8 +139,19 @@ private struct SquareImageModifier: ViewModifier {
 }
 
 private extension Image {
-    func alchemySqr(width: CGFloat)  -> some View {
-        return self.resizable().modifier(SquareImageModifier(imageWidth: width))
+    func alchemySqr()  -> some View {
+        return self
+            .resizable()
+            .scaledToFill()
+            .fullScreenSqr()
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private extension View {
+    func fullScreenSqr() -> some View {
+        let squareSize = UIScreen.main.bounds.width - 20
+        return self.frame(width: squareSize, height: squareSize)
     }
 }
 
