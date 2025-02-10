@@ -9,15 +9,15 @@ import Foundation
 import UIKit
 import OSLog
 
-class AlcheyVM: ObservableObject {
+// NSObject is requried for UIImageWriteToSavedPhotosAlbum to work
+class AlcheyVM: NSObject, ObservableObject {
     @Published var styleFileName: String? = nil
-    
-    @Published var resultImage: UIImage? = nil
     
     @Published var targetState: TargetViewState
     
+    @Published var showSavedMessage: Bool = false
+    
     private lazy var styleTransfererTask: Task<StyleTransferer, Never> = Task.detached(priority: .userInitiated) {
-        print("BGLM - creating StyleTransfere")
         return StyleTransferer()
     }
     
@@ -59,13 +59,31 @@ class AlcheyVM: ObservableObject {
     ]
     
     // Save image to local storage
-    func saveImage() {
+    func saveImage(
+    ) {
+        guard let resultImage = targetState.getResultImage() else {
+            return
+        }
+        Task.detached(priority: .background) {
+            UIImageWriteToSavedPhotosAlbum(resultImage, self, #selector(self.image(_:didFinishSavingWithError:contextInfo:)), nil)
+
+        }
         
     }
-    
-    // share
-    func share() {
-        
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            Logger.alchemyVM.info("error saving result image \(error.localizedDescription)")
+        } else {
+            Task {
+                await MainActor.run {
+                    showSavedMessage = true
+                }
+                try await Task.sleep(for: .seconds(2))
+                await MainActor.run {
+                    showSavedMessage = false
+                }
+            }
+        }
     }
     
     // MainActor required because self.resultImage needs to be updated on main thread

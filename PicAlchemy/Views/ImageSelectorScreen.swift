@@ -40,6 +40,7 @@ struct ImageSelectorScreen : View {
                     .foregroundColor(.white)
                     .background(Color("AccentColor"))
                     .clipShape(Circle())
+                    .shadow(radius: 10)
             }
             .padding(36)
         }
