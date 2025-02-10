@@ -66,7 +66,7 @@ struct AlchemyView: View {
                         }
                     }()
                 ) {
-                    alchemyVM.toggle()
+                    // no-op - toggle showOriginal
                 }
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)

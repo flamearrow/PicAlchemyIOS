@@ -16,6 +16,10 @@ class AlcheyVM: ObservableObject {
     
     @Published var targetState: TargetViewState
     
+    private lazy var styleTransfererTask: Task<StyleTransferer, Never> = Task.detached(priority: .userInitiated) {
+        return StyleTransferer()
+    }
+    
     init(content: UIImage?) {
         guard let content = content else {
             fatalError("invalid content image")
@@ -23,7 +27,6 @@ class AlcheyVM: ObservableObject {
         self.targetState = .idle(contentImage: content)
     }
     
-    private let styleTransferer = StyleTransferer()
 
     let presetStyleNames = [
         "style0",
@@ -59,11 +62,6 @@ class AlcheyVM: ObservableObject {
         
     }
     
-    // toggle result and original image
-    func toggle() {
-        
-    }
-    
     // share
     func share() {
         
@@ -86,8 +84,10 @@ class AlcheyVM: ObservableObject {
         guard let styleImage = UIImage(named: styleName) else {
             fatalError("Faithless Error: Style Image not found!")
         }
+        
         Task {
-            let resultImage = await styleTransferer.transferStyle(content: content, style: styleImage)
+            let styleTransferer = await self.styleTransfererTask.value // Off main thread, only calcualted once
+            let resultImage = await styleTransferer.transferStyle(content: content, style: styleImage) // Off main thread, only calcualted once
             targetState = .result(contentImage: content, resultImage: resultImage)
         }
     }
