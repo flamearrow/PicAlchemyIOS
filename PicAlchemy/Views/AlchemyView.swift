@@ -84,6 +84,9 @@ struct AlchemyView: View {
                         alchemyVM.share()
                     }
                 }
+                .padding(
+                    .init(top: 30, leading: 40, bottom: 20, trailing: 40)
+                )
                 
                 ScrollView(.horizontal) {
                     LazyHGrid(rows: [

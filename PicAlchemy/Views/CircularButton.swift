@@ -35,7 +35,6 @@ struct CircularButton: View {
                     .foregroundColor(.white)
                     .background(Color("AccentColor"))
                     .clipShape(Circle())
-                    .padding(.init(top: 30, leading: 40, bottom: 20, trailing: 40))
                     .shadow(radius: 10)
             }
         case .small:
