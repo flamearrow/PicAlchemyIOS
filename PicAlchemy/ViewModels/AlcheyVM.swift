@@ -11,12 +11,13 @@ import OSLog
 
 class AlcheyVM: ObservableObject {
     @Published var styleFileName: String? = nil
-        
+    
     @Published var resultImage: UIImage? = nil
     
     @Published var targetState: TargetViewState
     
     private lazy var styleTransfererTask: Task<StyleTransferer, Never> = Task.detached(priority: .userInitiated) {
+        print("BGLM - creating StyleTransfere")
         return StyleTransferer()
     }
     
@@ -27,7 +28,7 @@ class AlcheyVM: ObservableObject {
         self.targetState = .idle(contentImage: content)
     }
     
-
+    
     let presetStyleNames = [
         "style0",
         "style1",
@@ -87,8 +88,40 @@ class AlcheyVM: ObservableObject {
         
         Task {
             let styleTransferer = await self.styleTransfererTask.value // Off main thread, only calcualted once
-            let resultImage = await styleTransferer.transferStyle(content: content, style: styleImage) // Off main thread, only calcualted once
+            let transformedContent = await content.transformedToScreenWidth()
+            let resultImage = await styleTransferer.transferStyle(content: transformedContent, style: styleImage) // Off main thread, only calcualted once
             targetState = .result(contentImage: content, resultImage: resultImage)
         }
+    }
+}
+
+
+private extension UIImage {
+    
+    func transformedToScreenWidth() async -> UIImage {
+        let squareSize = await UIScreen.main.bounds.width - 20
+        let targetSize = CGSize(width: squareSize, height: squareSize)
+        return await transformed(to: targetSize)
+    }
+    
+    // Creates a new UIImage with aspect fill scaling and rounded rectangle clipping on a separate thread
+    private func transformed(to targetSize: CGSize) async -> UIImage {
+        return await Task.detached(priority: .userInitiated) {
+            let renderer = UIGraphicsImageRenderer(size: targetSize)
+            return renderer.image { context in
+                // Calculate the scale factor for aspect fill
+                let scale = max(targetSize.width / self.size.width,
+                                targetSize.height / self.size.height)
+                let scaledWidth = self.size.width * scale
+                let scaledHeight = self.size.height * scale
+                
+                // Center the image in the target rect
+                let x = (targetSize.width - scaledWidth) / 2.0
+                let y = (targetSize.height - scaledHeight) / 2.0
+                
+                let drawRect = CGRect(x: x, y: y, width: scaledWidth, height: scaledHeight)
+                self.draw(in: drawRect)
+            }
+        }.value
     }
 }
