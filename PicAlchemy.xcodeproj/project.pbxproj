@@ -410,7 +410,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PicAlchemy/Preview Content\"";
-				DEVELOPMENT_TEAM = G27RZ32MAP;
+				DEVELOPMENT_TEAM = 8KU5XM4LZ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PicAlchemy/Info.plist;
@@ -430,7 +430,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = band.mlgb.PicAlchemy;
+				PRODUCT_BUNDLE_IDENTIFIER = band.mlgb.picalchemy1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -447,7 +447,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PicAlchemy/Preview Content\"";
-				DEVELOPMENT_TEAM = G27RZ32MAP;
+				DEVELOPMENT_TEAM = 8KU5XM4LZ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PicAlchemy/Info.plist;
@@ -467,7 +467,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = band.mlgb.PicAlchemy;
+				PRODUCT_BUNDLE_IDENTIFIER = band.mlgb.picalchemy1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
