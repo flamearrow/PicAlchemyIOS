@@ -1,0 +1,33 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Blah" : {
+
+    },
+    "No result available" : {
+
+    },
+    "saved" : {
+      "comment" : "Image saved to gallery",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已保存！"
+          }
+        }
+      }
+    },
+    "Select photos" : {
+
+    }
+  },
+  "version" : "1.0"
+}

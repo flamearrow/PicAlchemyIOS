@@ -193,7 +193,7 @@ struct AlchemyView: View {
                 }
             }
             if alchemyVM.showSavedMessage {
-                Toast(msg: "Saved!")
+                Toast(msg: String(localized: "saved"))
             }
         }
         .animation(.easeInOut, value: alchemyVM.showSavedMessage)
