@@ -22,11 +22,21 @@ struct Home: View {
                     guard selectorVM.selectedImage != nil else { return }
                     navPath.append("details")
                 }
+                .onChange(of: selectorVM.zoomResultImage) {
+                    guard selectorVM.zoomResultImage != nil else { return }
+                    navPath.append("zoomResultImage")
+                }
                 .navigationDestination(for: String.self) { value in
                     switch(value) {
                     case "details":
                         AlchemyView(selectedVM: selectorVM)
                             .navigationBarBackButtonHidden(false)
+                    case "zoomResultImage":
+                        FullscreenImageView(image: selectorVM.zoomResultImage!)
+                            .navigationBarBackButtonHidden(false)
+                            .onDisappear {
+                                selectorVM.zoomResultImage = nil
+                            }
                     default:
                         Text("Blah")
                     }

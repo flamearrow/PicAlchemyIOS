@@ -16,6 +16,8 @@ import CoreML
 // UIImage extensions stolen from https://github.com/hollance/CoreMLHelpers
 struct StyleTransferer {
     private let styleTransferModel: StyleTransfererModel
+    private let inputSize = 512
+    private let styleSize = 256 // use as trained for best result
     init() {
         guard let styleTransferer = try? StyleTransfererModel(configuration: .init()) else {
             fatalError("Failed to load style transfer model")
@@ -25,7 +27,7 @@ struct StyleTransferer {
     }
     func transferStyle(content: UIImage, style: UIImage) async -> UIImage  {
         return await Task.detached(priority: .userInitiated) { // run on a different thread
-            guard let contentBuffer = content.pixelBuffer(width: 512, height: 512), let styleBuffer = style.pixelBuffer(width: 256, height: 256) else {
+            guard let contentBuffer = content.pixelBuffer(width: inputSize, height: inputSize), let styleBuffer = style.pixelBuffer(width: styleSize, height: styleSize) else {
                 fatalError("Failed to convert UIImage to pixel buffer")
             }
             

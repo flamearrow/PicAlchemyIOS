@@ -1,5 +1,5 @@
 //
-//  AlchemyViewModel.swift
+//  AlchemyVM.swift
 //  PicAlchemy
 //
 //  Created by Chen Cen on 2/6/25.
@@ -10,7 +10,7 @@ import UIKit
 import OSLog
 
 // NSObject is requried for UIImageWriteToSavedPhotosAlbum to work
-class AlcheyVM: NSObject, ObservableObject {
+class AlchemyVM: NSObject, ObservableObject {
     @Published var styleFileName: String? = nil
     
     @Published var targetState: TargetViewState
@@ -29,34 +29,7 @@ class AlcheyVM: NSObject, ObservableObject {
     }
     
     
-    let presetStyleNames = [
-        "style0",
-        "style1",
-        "style2",
-        "style3",
-        "style4",
-        "style5",
-        "style6",
-        "style7",
-        "style8",
-        "style9",
-        "style10",
-        "style11",
-        "style12",
-        "style13",
-        "style14",
-        "style15",
-        "style16",
-        "style17",
-        "style18",
-        "style19",
-        "style20",
-        "style21",
-        "style22",
-        "style23",
-        "style24",
-        "style25"
-    ]
+    let presetStyleNames = (0...29).map { "style\($0)" }
     
     // Save image to local storage
     func saveImage(

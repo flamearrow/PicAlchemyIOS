@@ -45,12 +45,12 @@ enum TargetViewState {
 
 struct AlchemyView: View {
     @ObservedObject var selectedVM: ImageSelectorVM
-    @StateObject var alchemyVM: AlcheyVM
+    @StateObject var alchemyVM: AlchemyVM
     @State var showOriginal: Bool
     @State var shareResult: Bool
     init(selectedVM: ImageSelectorVM) {
         self._selectedVM = ObservedObject(wrappedValue: selectedVM)
-        self._alchemyVM = StateObject(wrappedValue: AlcheyVM(content: selectedVM.selectedImage))
+        self._alchemyVM = StateObject(wrappedValue: AlchemyVM(content: selectedVM.selectedImage))
         self.showOriginal = false
         self.shareResult = false
     }
@@ -71,7 +71,27 @@ struct AlchemyView: View {
                         if showOriginal {
                             Image(uiImage: contentImage).alchemySqr()
                         } else {
-                            Image(uiImage: resultImage).alchemySqr()
+                            Image(uiImage: resultImage)
+                                .alchemySqr()
+                                .simultaneousGesture(
+                                    DragGesture()
+                                        .onChanged { _ in
+                                            selectedVM.zoomResultImage = resultImage
+                                        }
+                                        .onEnded { _ in
+                                        }
+                                )
+                                .simultaneousGesture(
+                                    MagnificationGesture()
+                                        .onChanged { _ in
+                                            selectedVM.zoomResultImage = resultImage
+                                        }
+                                        .onEnded { _ in
+                                        }
+                                )
+                                .onTapGesture {
+                                    selectedVM.zoomResultImage = resultImage
+                                }
                         }
                     }
                 }
@@ -175,7 +195,8 @@ struct AlchemyView: View {
             if alchemyVM.showSavedMessage {
                 Toast(msg: "Saved!")
             }
-        }.animation(.easeInOut, value: alchemyVM.showSavedMessage)
+        }
+        .animation(.easeInOut, value: alchemyVM.showSavedMessage)
     }
 }
 
