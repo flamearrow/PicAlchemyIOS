@@ -13,9 +13,14 @@ import OSLog
 class AlchemyVM: NSObject, ObservableObject {
     @Published var styleFileName: String? = nil
     
-    @Published var targetState: TargetViewState
+    @Published var targetState: AlchemyState
     
     @Published var showSavedMessage: Bool = false
+    
+    @Published var scale: CGFloat = 1.0
+    @Published var lastScale: CGFloat = 1.0
+    @Published var offset: CGSize = .zero
+    @Published var lastOffset: CGSize = .zero
     
     private lazy var styleTransfererTask: Task<StyleTransferer, Never> = Task.detached(priority: .userInitiated) {
         return StyleTransferer()
@@ -63,10 +68,14 @@ class AlchemyVM: NSObject, ObservableObject {
     @MainActor
     func selectStyle(content: UIImage, styleName: String) {
         let content: UIImage
+        let shouldTransform: Bool
         if case .idle(let contentImage) = targetState {
             content = contentImage
+            shouldTransform = true
         } else if case .result(let contentImage, _) = targetState {
             content = contentImage
+            // don't transform for .result - content is already transformed, user clicked another style
+            shouldTransform = false
         } else {
             Logger.alchemyVM.info("Tapped another style while transferring")
             return
@@ -79,9 +88,9 @@ class AlchemyVM: NSObject, ObservableObject {
         
         Task {
             let styleTransferer = await self.styleTransfererTask.value // Off main thread, only calcualted once
-            let transformedContent = await content.transformedToScreenWidth()
+            let transformedContent = shouldTransform ? await content.transformedToDisplayed(scale, offset) : content
             let resultImage = await styleTransferer.transferStyle(content: transformedContent, style: styleImage) // Off main thread, only calcualted once
-            targetState = .result(contentImage: content, resultImage: resultImage)
+            targetState = .result(contentImage: transformedContent, resultImage: resultImage)
         }
     }
 }
@@ -89,28 +98,40 @@ class AlchemyVM: NSObject, ObservableObject {
 
 private extension UIImage {
     
-    func transformedToScreenWidth() async -> UIImage {
+    /// Transform original UIImage based on the current scale and offset of Image shown
+    func transformedToDisplayed(_ scale: CGFloat, _ offset: CGSize) async -> UIImage {
         let squareSize = await UIScreen.main.bounds.width - 20
         let targetSize = CGSize(width: squareSize, height: squareSize)
-        return await transformed(to: targetSize)
+        return await transformed(to: targetSize, scale, offset)
     }
     
     // Creates a new UIImage with aspect fill scaling and rounded rectangle clipping on a separate thread
-    private func transformed(to targetSize: CGSize) async -> UIImage {
+    private func transformed(to targetSize: CGSize, _ scale: CGFloat, _ offset: CGSize) async -> UIImage {
         return await Task.detached(priority: .userInitiated) {
             let renderer = UIGraphicsImageRenderer(size: targetSize)
             return renderer.image { context in
-                // Calculate the scale factor for aspect fill
-                let scale = max(targetSize.width / self.size.width,
-                                targetSize.height / self.size.height)
-                let scaledWidth = self.size.width * scale
-                let scaledHeight = self.size.height * scale
+                // Get the intrinsic size of the underlying image.
+                let imageSize = self.size
                 
-                // Center the image in the target rect
-                let x = (targetSize.width - scaledWidth) / 2.0
-                let y = (targetSize.height - scaledHeight) / 2.0
+                // Compute the factor needed by .scaledToFill.
+                // This ensures the image completely covers the square.
+                let fillFactor = max(targetSize.width / imageSize.width,
+                                     targetSize.height / imageSize.height)
                 
-                let drawRect = CGRect(x: x, y: y, width: scaledWidth, height: scaledHeight)
+                // Multiply the fill factor with your custom scale.
+                let finalScale = fillFactor * scale
+                
+                // Calculate the new dimensions of the image.
+                let newWidth = imageSize.width * finalScale
+                let newHeight = imageSize.height * finalScale
+                
+                // In SwiftUI, your image is centered in the square view
+                // and then offset by `offset`. Replicate that here.
+                let originX = (targetSize.width - newWidth) / 2 + offset.width
+                let originY = (targetSize.height - newHeight) / 2 + offset.height
+                let drawRect = CGRect(x: originX, y: originY, width: newWidth, height: newHeight)
+                
+                // Draw the image into the context with the computed rectangle.
                 self.draw(in: drawRect)
             }
         }.value

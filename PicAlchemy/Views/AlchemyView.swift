@@ -8,9 +8,12 @@
 import Foundation
 import SwiftUI
 
-enum TargetViewState {
+enum AlchemyState {
+    // when ML model is initializing or transfer in progress
     case loading
+    // when content image ready and no transfer happens
     case idle(contentImage: UIImage)
+    // when content image is ready and transfer result available
     case result(contentImage: UIImage, resultImage: UIImage)
     
     func isResult() -> Bool {
@@ -62,35 +65,18 @@ struct AlchemyView: View {
                 Group {
                     switch(alchemyVM.targetState) {
                     case .idle(let contentImage):
-                        Image(uiImage: contentImage).alchemySqr()
+                        AlchemyImageEditingView(uiImage: contentImage, alchemyVM: alchemyVM)
                     case .loading:
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle()) // Spinner style
                             .fullScreenSqr()
                     case .result(let contentImage, let resultImage):
                         if showOriginal {
-                            Image(uiImage: contentImage).alchemySqr()
+                            ScrollableSquareImage(uiImage: contentImage)
                         } else {
-                            Image(uiImage: resultImage)
-                                .alchemySqr()
-                                .simultaneousGesture(
-                                    DragGesture()
-                                        .onChanged { _ in
-                                            selectedVM.zoomResultImage = resultImage
-                                        }
-                                        .onEnded { _ in
-                                        }
-                                )
-                                .simultaneousGesture(
-                                    MagnificationGesture()
-                                        .onChanged { _ in
-                                            selectedVM.zoomResultImage = resultImage
-                                        }
-                                        .onEnded { _ in
-                                        }
-                                )
-                                .onTapGesture {
-                                    selectedVM.zoomResultImage = resultImage
+                            ScrollableSquareImage(uiImage: resultImage)
+                                .onTapGesture(count: 2) {
+                                    shareResult = true
                                 }
                         }
                     }
@@ -164,8 +150,6 @@ struct AlchemyView: View {
                                         .scaledToFit()
                                         .aspectRatio(1, contentMode: .fit)
                                         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                                }.onAppear {
-                                    print("")
                                 }
                                 .id(index)
                             }
@@ -213,23 +197,6 @@ private struct SquareImageModifier: ViewModifier {
             .clipShape(RoundedRectangle(cornerRadius: 10))
     }
     
-}
-
-private extension Image {
-    func alchemySqr()  -> some View {
-        return self
-            .resizable()
-            .scaledToFill()
-            .fullScreenSqr()
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-}
-
-private extension View {
-    func fullScreenSqr() -> some View {
-        let squareSize = UIScreen.main.bounds.width - 20
-        return self.frame(width: squareSize, height: squareSize)
-    }
 }
 
 #Preview {

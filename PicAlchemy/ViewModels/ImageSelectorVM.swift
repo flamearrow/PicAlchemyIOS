@@ -22,8 +22,6 @@ class ImageSelectorVM: ObservableObject {
     
     @Published var selectedImage: UIImage? = nil
     
-    @Published var zoomResultImage: UIImage? = nil
-    
     init() {}
     
     // For preview only
