@@ -8,7 +8,7 @@ from typing import cast, List
 # Input: content size is [1, W0, H0, 3], style is recommended to use [1, 256, 256, 3] as it's used in training
 # Output: MLMultiArray with [1, W0, H0, 3] where W0, H0 equal input content size
 def do_transfer():
-    tflite_model_path = "tfModel"
+    tf_model_path = "tfModel"
     coreml_model_path = "StyleTransfererModel.mlmodel"
 
     inputs: List[ct.TensorType] = cast(List[ct.TensorType], [
@@ -27,7 +27,7 @@ def do_transfer():
     ])
 
     mlmodel = ct.convert(
-        tflite_model_path,
+        tf_model_path,
         source="tensorflow",
         inputs=inputs,
         minimum_deployment_target=ct.target.iOS13
